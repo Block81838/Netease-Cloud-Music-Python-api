@@ -52,8 +52,11 @@ class NeteaseCloudMusic():
             raise error.URLError(e.reason)
         else:
             _rs_json = json.loads(rs.read())
-            _lyrics_ori = _rs_json["lyric"]
-            _lyrics = self.__lyric_process(_lyrics_ori)
+            if "lyric" in _rs_json:
+                _lyrics_ori = _rs_json["lyric"]
+                _lyrics = self.__lyric_process(_lyrics_ori)
+            else:
+                _lyrics = "Not Found"
         return _lyrics
 
     def song(self, sid):
@@ -79,16 +82,17 @@ class NeteaseCloudMusic():
         _lyrics_list = content.split("\n")
         _lyrics_string = ""
         for i in _lyrics_list:
-            if "by:" in i:
-                continue
-            _lyrics_string += i[10:]
+            if "by:" in i or i == "\n": continue
+            if "]" in i: index = i.index("]")
+            else: index = 0
+            _lyrics_string += i[index+1:]
             _lyrics_string += "\n"
         return _lyrics_string
 
     @staticmethod
     def __song_url_process(content):
         _song_json = json.loads(content.read())
-        if not "data" in _song_json:
+        if "data" not in _song_json:
             return None
         _song_url = _song_json["data"][0]["url"]
         return _song_url
